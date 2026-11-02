@@ -566,7 +566,7 @@
     mkBtn('停一手', function () {
       if (aiThinking) return;
       g.pass(); consecutivePasses++;
-      if (consecutivePasses >= 2) { showFreeScore(); } else { refresh(); maybeAi(); }
+      afterMove();
     });
     mkBtn('数目', showFreeScore);
     mkBtn('提示', function () {
@@ -582,7 +582,7 @@
     });
     mkBtn('重新开始', function () {
       cancelAi();
-      g.reset(); consecutivePasses = 0; clear(scoreArea); refresh(); maybeAi();
+      g.reset(); consecutivePasses = 0; clear(scoreArea); afterMove();
     });
     view.appendChild(controls);
 
@@ -602,6 +602,22 @@
       scoreArea.appendChild(h('p', null, '黑方 ' + s.black + ' 目 · 白方 ' + s.white + ' 目（贴 6.5 目）'));
       scoreArea.appendChild(h('p', 'score-verdict', verdict));
     }
+    function afterMove() {
+      // 当前方无合法落点时自动停一手
+      while (consecutivePasses < 2 && !g.hasLegalMove(g.turn)) {
+        g.pass();
+        consecutivePasses++;
+      }
+      if (consecutivePasses >= 2) {
+        bv.hint = null;
+        bv.render();
+        status.textContent = '双方停一手，对局结束。';
+        showFreeScore();
+      } else {
+        refresh();
+        maybeAi();
+      }
+    }
     function onFreeClick(x, y) {
       if (aiThinking) return;
       if (mode === 'ai' && g.turn === aiColor) return; // 等待电脑落子
@@ -610,8 +626,7 @@
       consecutivePasses = 0;
       GobanSound.playStone();
       if (res.captured.length) GobanSound.playCapture();
-      refresh();
-      maybeAi();
+      afterMove();
     }
     function maybeAi() {
       if (mode !== 'ai' || g.turn !== aiColor || aiThinking) return;
@@ -625,14 +640,12 @@
           GobanSound.playStone();
           if (r.captured.length) GobanSound.playCapture();
         }
-        else { g.pass(); consecutivePasses++; }
         aiThinking = false;
-        if (consecutivePasses >= 2) { refresh(); showFreeScore(); } else { refresh(); }
+        afterMove();
       }, 380);
     }
 
-    refresh();
-    maybeAi();
+    afterMove();
   }
 
   // ---------- 视图切换 ----------

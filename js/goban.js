@@ -74,6 +74,43 @@
     return this.groupAndLiberties(idx, board).liberties;
   };
 
+  // 非破坏性判断 (x,y) 落子是否合法（不修改棋盘）
+  Goban.prototype.isLegal = function (x, y, color) {
+    color = color || this.turn;
+    if (!this.inBounds(x, y)) return false;
+    var idx = this.index(x, y);
+    if (this.board[idx] !== EMPTY) return false;
+    if (idx === this.koPoint) return false;
+    var sim = this.board.slice();
+    sim[idx] = color;
+    var opp = opponent(color);
+    var capturedSet = {};
+    var nb = this.neighbors(idx);
+    for (var i = 0; i < nb.length; i++) {
+      var n = nb[i];
+      if (sim[n] === opp) {
+        var g = this.groupAndLiberties(n, sim);
+        if (g.liberties.length === 0) {
+          for (var k = 0; k < g.stones.length; k++) capturedSet[g.stones[k]] = true;
+        }
+      }
+    }
+    var captured = Object.keys(capturedSet).map(Number);
+    for (i = 0; i < captured.length; i++) sim[captured[i]] = EMPTY;
+    var own = this.groupAndLiberties(idx, sim);
+    return own.liberties.length > 0;
+  };
+
+  // 该方是否至少有一个合法落点
+  Goban.prototype.hasLegalMove = function (color) {
+    color = color || this.turn;
+    for (var i = 0; i < this.board.length; i++) {
+      if (this.board[i] !== EMPTY) continue;
+      if (this.isLegal(this.xOf(i), this.yOf(i), color)) return true;
+    }
+    return false;
+  };
+
   // 在 (x,y) 落子（默认当前执子方）。返回结果对象。
   Goban.prototype.play = function (x, y, color) {
     color = color || this.turn;
