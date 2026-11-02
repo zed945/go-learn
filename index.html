@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>围棋入门 · 零基础循序渐进</title>
+  <meta name="description" content="从零开始循序渐进学习围棋：规则、气、提子、死活、吃子技巧、布局、定式、收官。">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="menuBtn" class="icon-btn" aria-label="打开目录">☰</button>
+    <div class="brand">围棋入门</div>
+    <nav class="topnav">
+      <a href="#home" data-view="home">课程</a>
+      <a href="#freeplay" data-view="freeplay">自由对弈</a>
+    </nav>
+  </header>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-head">课程目录</div>
+    <nav id="outline" class="outline"></nav>
+  </aside>
+  <div id="backdrop" class="backdrop"></div>
+
+  <main id="main">
+    <section id="view-home" class="view"></section>
+    <section id="view-lesson" class="view"></section>
+    <section id="view-freeplay" class="view"></section>
+  </main>
+
+  <script src="js/goban.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
