@@ -51,6 +51,13 @@ body {
   padding: 6px 12px; border-radius: 8px;
 }
 .topnav a:hover { color: var(--accent-2); background: var(--bg); }
+.sound-btn {
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  font-size: 13px; padding: 5px 10px; border-radius: 8px; cursor: pointer;
+  white-space: nowrap;
+}
+.sound-btn:hover { color: var(--accent-2); }
+.sound-btn.muted { color: #b0a795; text-decoration: line-through; }
 
 /* ---------- 侧栏 ---------- */
 .sidebar {

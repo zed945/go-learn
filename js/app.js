@@ -333,6 +333,7 @@
       if (!res.ok) {
         fb.className = 'feedback error';
         fb.textContent = friendlyError(res.error);
+        GobanSound.playWrong();
         return;
       }
       var coord = Goban.coordToStr(x, y, g.size);
@@ -340,6 +341,7 @@
         solved = true;
         fb.className = 'feedback success';
         fb.textContent = section.success || '正确！';
+        GobanSound.playCorrect();
         bv.render();
         if (section.explain) {
           var ex = h('p', 'feedback-explain', section.explain);
@@ -349,6 +351,7 @@
         g.undo();
         fb.className = 'feedback error';
         fb.textContent = '这一手不能解决问题，再想想。';
+        GobanSound.playWrong();
         bv.render();
       }
     }
@@ -430,6 +433,7 @@
     doneBtn.addEventListener('click', function () {
       var nowDone = !isLessonDone(lesson.id);
       setLessonDone(lesson.id, nowDone);
+      if (nowDone) GobanSound.playDone();
       doneBtn.textContent = nowDone ? '✓ 已学完' : '标记本课完成';
       renderOutline();
       renderHomeProgress();
@@ -602,8 +606,10 @@
       if (aiThinking) return;
       if (mode === 'ai' && g.turn === aiColor) return; // 等待电脑落子
       var res = g.play(x, y);
-      if (!res.ok) { status.textContent = friendlyError(res.error); return; }
+      if (!res.ok) { status.textContent = friendlyError(res.error); GobanSound.playWrong(); return; }
       consecutivePasses = 0;
+      GobanSound.playStone();
+      if (res.captured.length) GobanSound.playCapture();
       refresh();
       maybeAi();
     }
@@ -614,7 +620,11 @@
       aiTimer = setTimeout(function () {
         aiTimer = null;
         var mv = GobanAI.aiMove(g, aiColor);
-        if (mv) { g.play(mv.x, mv.y); consecutivePasses = 0; }
+        if (mv) {
+          var r = g.play(mv.x, mv.y); consecutivePasses = 0;
+          GobanSound.playStone();
+          if (r.captured.length) GobanSound.playCapture();
+        }
         else { g.pass(); consecutivePasses++; }
         aiThinking = false;
         if (consecutivePasses >= 2) { refresh(); showFreeScore(); } else { refresh(); }
@@ -666,6 +676,24 @@
   function init() {
     document.getElementById('menuBtn').addEventListener('click', openSidebar);
     document.getElementById('backdrop').addEventListener('click', closeSidebar);
+
+    // 声音开关
+    var soundBtn = document.getElementById('soundBtn');
+    GobanSound.setEnabled(progress.sound !== false);
+    function updateSoundBtn() {
+      var on = GobanSound.isEnabled();
+      soundBtn.textContent = on ? '音效开' : '音效关';
+      soundBtn.classList.toggle('muted', !on);
+    }
+    updateSoundBtn();
+    soundBtn.addEventListener('click', function () {
+      var next = !GobanSound.isEnabled();
+      GobanSound.setEnabled(next);
+      progress.sound = next;
+      saveProgress();
+      if (next) GobanSound.ensureCtx();
+      updateSoundBtn();
+    });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (a) {
       a.addEventListener('click', function (e) {
